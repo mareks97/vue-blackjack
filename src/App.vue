@@ -73,7 +73,7 @@
 
     </div>
     <div class="score d-flex align-items-center" v-if="gameStarted">
-      <div class="total text-center">
+      <div class="total text-center ">
         {{ currentValuePlayer() }}
       </div>
       <div class="text">Player</div>
@@ -102,6 +102,7 @@ export default {
       dealerCards: [],
       gameStarted: false,
       hasAce: false,
+
       acesCount: 0,
 
 
@@ -126,16 +127,15 @@ export default {
       ],
     };
   },
-
+//create and shuffle deck on mounted lifecycle hook so it's ready when loading the page
   mounted() {
     this.createDeck();
     this.shuffleDeck(this.deck);
   },
   methods: {
-    logCards() {
-      console.log(this.dealerCards);
-    },
 
+//at start game check cards left in deck, reset some variables and draw cards.
+//also check for a "BlackJack(A+10 or A+Figure)"
     newGame() {
       if (this.deck.length >= 26) {
         this.createDeck();
@@ -164,6 +164,7 @@ export default {
       this.getWinner();
     },
 
+//helper function to delay
     sleep(ms) {
       return new Promise((accept) => {
         setTimeout(() => {
@@ -172,6 +173,7 @@ export default {
       });
     },
 
+//added async code to delay dealer draw cards for better user experience
     async getDealerCards() {
       this.dealerCards[1].secondCardDealer = false;
 
@@ -266,6 +268,9 @@ export default {
       }
     },
 
+//calculate current value of hand of player,
+//in case of going over 21 and having an ace
+//subtract 10 to the total (so ace is worth 1 instead of 11)
     currentValuePlayer() {
       let totalHandPlayer = 0;
       this.checkAces();
@@ -277,13 +282,12 @@ export default {
 
       if (
         totalHandPlayer > 21 &&
-        // this.acesCount > this.reducedValueAce &&
         this.hasAce &&
         reduce
       ) {
         totalHandPlayer = totalHandPlayer - 10;
         reduce = false;
-        // this.reducedValueAce  = this.reducedValueAce +1
+
       }
       return totalHandPlayer;
     },
@@ -377,6 +381,7 @@ export default {
       }
     },
   },
+  //bootsrap modal 
   setup() {
     const exampleModal = ref(false);
     return {
@@ -402,15 +407,6 @@ export default {
 .card-deck,
 .cardback {
   display: inline-block;
-  /* 
-  width: 150px;
-  height: auto;
-  border: 3px solid #666;
-  border-radius: 10px;
-  padding: 10px;
-  margin: 5px;
-  background-color: white;
-  */
 }
 
 .dealer-cards {
@@ -433,15 +429,15 @@ h1 {
 .total {
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.15);
-  width: 5rem;
-  height: 5rem;
+  width: 4rem;
+  height: 4rem;
   color: white;
-  font-size: 50px;
+  font-size: 40px;
 }
 
 .text {
   color: greenyellow;
-  font-size: 32px;
+  font-size: 28px;
   margin: 0 15px 0 15px;
   margin-bottom: 0;
   font-weight: 500;

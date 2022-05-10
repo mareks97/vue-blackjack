@@ -63,7 +63,7 @@ export default {
 
 <style scoped>
 .icon {
-  width: 65px;
+  width: 45px;
   height: auto;
   /* z-index: 5; */
 }
@@ -74,11 +74,11 @@ export default {
 }
 
 .card-deck {
-  width: 150px;
-  height: 225px;
+  width: 120px;
+  height: 180px;
   border: 1px solid #666;
   border-radius: 10px;
-  padding: 10px;
+  padding: 5px;
   margin: 5px;
   background-color: white;
 }
