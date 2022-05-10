@@ -2,7 +2,7 @@
 
 #### Project setup
 ```
-npm install (in caso of conflicts use "npm install --force")
+npm install (in case of conflicts use "npm install --force")
 ```
 
 #### Compiles and hot-reloads for development
