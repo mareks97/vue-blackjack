@@ -1,26 +1,13 @@
 <template>
   <MDBContainer>
     <div class="start-btn d-flex justify-content-center" v-if="!gameStarted">
-      <MDBBtn
-        outline="danger"
-        class="btn-startgame"
-        size="lg"
-        @click="newGame()"
-        >START GAME</MDBBtn
-      >
+      <button id="start" @click="newGame()">START GAME</button>
     </div>
-    <div class="d-flex justify-content-center">
-      <MDBBtn
-        v-if="gameStarted && winner"
-        outline="danger"
-        size="lg"
-        @click="newGame()"
-        >New Game</MDBBtn
-      >
-    </div>
+    <div class="d-flex justify-content-center"></div>
     <MDBRow>
       <MDBCol>
         <MDBModal
+          centered
           id="exampleModal"
           tabindex="-1"
           labelledby="exampleModalLabel"
@@ -28,7 +15,7 @@
           class="winningModal"
         >
           <div class="d-flex justify-content-center">
-            <h2>{{ message }}</h2>
+            <h2>{{ message.toUpperCase() }}</h2>
           </div>
         </MDBModal>
 
@@ -36,10 +23,9 @@
           <div class="total text-center">
             {{ currentValueDealer() }}
           </div>
-          <div class="text">Dealer</div>
+          <div class="text">DEALER</div>
         </div>
       </MDBCol>
-
     </MDBRow>
 
     <div class="dealer-cards d-flex justify-content-center">
@@ -54,8 +40,22 @@
     </div>
 
     <div class="buttons text-center">
-      <MDBBtn
-        v-if="gameStarted"
+      <button
+        v-if="gameStarted && winner"
+        id="start"
+        class="new-game"
+        @click="newGame()"
+      >
+        NEW GAME
+      </button>
+      <button class="game-btn" v-if="gameStarted && !winner" @click="onHit()">
+        HIT
+      </button>
+      <button class="game-btn" v-if="gameStarted && !winner" @click="onStand()">
+        STAND
+      </button>
+      <!-- <MDBBtn
+        v-if="gameStarted && !winner"
         color="light"
         :disabled="winner != ''"
         @click="onHit()"
@@ -63,20 +63,19 @@
         Hit
       </MDBBtn>
       <MDBBtn
-        v-if="gameStarted"
+        v-if="gameStarted && !winner"
         color="light"
         :disabled="winner != ''"
         @click="onStand()"
       >
         Stand
-      </MDBBtn>
-
+      </MDBBtn> -->
     </div>
     <div class="score d-flex align-items-center" v-if="gameStarted">
-      <div class="total text-center ">
+      <div class="total text-center">
         {{ currentValuePlayer() }}
       </div>
-      <div class="text">Player</div>
+      <div class="text">PLAYER</div>
     </div>
     <div class="player-cards d-flex justify-content-center">
       <div v-for="card in playerCards" :key="card" class="card-deck">
@@ -87,14 +86,14 @@
 </template>
 
 <script>
-import { MDBCol, MDBRow, MDBContainer, MDBBtn, MDBModal } from "mdb-vue-ui-kit";
+import { MDBCol, MDBRow, MDBContainer, MDBModal } from "mdb-vue-ui-kit";
 import { ref } from "vue";
 
 import GameCard from "./components/GameCard.vue";
 
 export default {
   name: "BlackJack",
-  components: { MDBCol, MDBRow, MDBContainer, MDBBtn, GameCard, MDBModal },
+  components: { MDBCol, MDBRow, MDBContainer, GameCard, MDBModal },
   data() {
     return {
       deck: [],
@@ -104,7 +103,6 @@ export default {
       hasAce: false,
 
       acesCount: 0,
-
 
       message: "",
       winner: "",
@@ -127,15 +125,14 @@ export default {
       ],
     };
   },
-//create and shuffle deck on mounted lifecycle hook so it's ready when loading the page
+  //create and shuffle deck on mounted lifecycle hook so it's ready when loading the page
   mounted() {
     this.createDeck();
     this.shuffleDeck(this.deck);
   },
   methods: {
-
-//at start game check cards left in deck, reset some variables and draw cards.
-//also check for a "BlackJack(A+10 or A+Figure)"
+    //at start game check cards left in deck, reset some variables and draw cards.
+    //also check for a "BlackJack(A+10 or A+Figure)"
     newGame() {
       if (this.deck.length >= 26) {
         this.createDeck();
@@ -164,7 +161,7 @@ export default {
       this.getWinner();
     },
 
-//helper function to delay
+    //helper function to delay
     sleep(ms) {
       return new Promise((accept) => {
         setTimeout(() => {
@@ -173,7 +170,7 @@ export default {
       });
     },
 
-//added async code to delay dealer draw cards for better user experience
+    //added async code to delay dealer draw cards for better user experience
     async getDealerCards() {
       this.dealerCards[1].secondCardDealer = false;
 
@@ -205,7 +202,6 @@ export default {
         }
       });
     },
-
 
     getWinner() {
       let playerHand = 0;
@@ -268,9 +264,9 @@ export default {
       }
     },
 
-//calculate current value of hand of player,
-//in case of going over 21 and having an ace
-//subtract 10 to the total (so ace is worth 1 instead of 11)
+    //calculate current value of hand of player,
+    //in case of going over 21 and having an ace
+    //subtract 10 to the total (so ace is worth 1 instead of 11)
     currentValuePlayer() {
       let totalHandPlayer = 0;
       this.checkAces();
@@ -280,14 +276,9 @@ export default {
         totalHandPlayer = this.cardValues(card) + totalHandPlayer;
       });
 
-      if (
-        totalHandPlayer > 21 &&
-        this.hasAce &&
-        reduce
-      ) {
+      if (totalHandPlayer > 21 && this.hasAce && reduce) {
         totalHandPlayer = totalHandPlayer - 10;
         reduce = false;
-
       }
       return totalHandPlayer;
     },
@@ -381,7 +372,7 @@ export default {
       }
     },
   },
-  //bootsrap modal 
+  //bootsrap modal
   setup() {
     const exampleModal = ref(false);
     return {
@@ -393,12 +384,15 @@ export default {
 
 <style>
 #app {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   font-family: Roboto, Helvetica, Arial, sans-serif;
   padding: 60px;
-  background: url("./assets/texture3.jpg") center/100%;
+  background: url("./assets/texture4.jpg");
+  background-size: cover;
   background-position: center;
   min-height: 100vh;
-
 }
 .icon {
   width: 60px;
@@ -407,6 +401,14 @@ export default {
 .card-deck,
 .cardback {
   display: inline-block;
+}
+
+.modal-content {
+  height: 150px;
+  background-color: whitesmoke;
+  box-shadow: #9b9b9b 0px 9px 0px !important;
+  font-size: 32px;
+  justify-content: center;
 }
 
 .dealer-cards {
@@ -443,9 +445,52 @@ h1 {
   font-weight: 500;
 }
 
+#start {
+  position: relative;
+  padding: 15px;
+  border-radius: 10px;
+  background-color: #f93154;
+  color: #ffff;
+  font-weight: 700;
+  border: none;
+  box-shadow: #862031 0px 9px 0px, 0px 9px 25px rgba(0, 0, 0, 0.7);
+  display: block;
+  transition: all 0.2ms ease;
+}
+#start:active {
+  position: relative;
+  box-shadow: 0px 3px 0px #862031, 0px 3px 6px rgba(0, 0, 0, 0.9);
+  top: 6px;
+}
+.game-btn {
+  margin-right: 15px;
+  width: 80px;
+  position: relative;
+  padding: 15px;
+  border-radius: 10px;
+  background-color: #e9e9e9;
+  color: rgb(38, 38, 38);
+  font-weight: 700;
+  border: none;
+  box-shadow: #888888 0px 9px 0px, 0px 6px 25px rgba(0, 0, 0, 0.7);
+  display: block;
+  transition: all 0.2ms ease;
+}
+.game-btn:active {
+  position: relative;
+  box-shadow: 0px 3px 0px #888888, 0px 2px 6px rgba(0, 0, 0, 0.9);
+  top: 4px;
+}
+
 .btn-startgame {
   padding: 50px !important;
   font-size: 30px !important;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  height: 60px;
 }
 
 .start-btn {
