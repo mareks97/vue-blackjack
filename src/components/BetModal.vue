@@ -17,7 +17,7 @@
       </div>
       <div class="buttons">
         <button class="game-btn" @click="resetBet()">RESET</button>
-        <button class="game-btn" @click="$emit('someFunction')">DEAL</button>
+        <button class="game-btn" @click="$emit('onDeal', totalBet)">DEAL</button>
       </div>
     </div>
   </div>
@@ -45,6 +45,7 @@ export default {
       }
       this.totalBet += value;
       this.$store.commit("bet", value);
+      this.$store.commit("setBet", this.totalBet)
     },
     resetBet() {
       this.$store.commit("win", this.totalBet);
@@ -72,7 +73,7 @@ export default {
   align-items: center;
   width: 100%;
   justify-content: center;
-  font-size: 40px;
+  font-size: 2.25rem;
 }
 
 p {

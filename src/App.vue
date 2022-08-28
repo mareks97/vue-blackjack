@@ -1,10 +1,9 @@
 <template>
-
-    <BetModal @someFunction="deal()"></BetModal>
+  <BetModal @onDeal="deal" v-if="showBetModal"></BetModal>
   <MDBContainer>
-
+    <BetStatus v-if="gameStarted && !showBetModal"></BetStatus>
     <div class="start-btn d-flex justify-content-center" v-if="!gameStarted">
-      <button id="start" @click="newGame()">START GAME</button>
+      <button id="start" @click="firstGame()">START GAME</button>
     </div>
     <div class="d-flex justify-content-center"></div>
     <MDBRow>
@@ -16,9 +15,11 @@
           labelledby="exampleModalLabel"
           v-model="exampleModal"
           class="winningModal"
+          @hidden="doSomething()"
         >
-          <div class="d-flex justify-content-center">
+          <div class="d-flex modal-text justify-content-center">
             <h2>{{ message.toUpperCase() }}</h2>
+            <h1 v-if="winner=='player'">${{betAmount}}</h1>
           </div>
         </MDBModal>
 
@@ -43,21 +44,30 @@
     </div>
 
     <div class="buttons text-center">
-      <button
+      <!-- <button
         v-if="gameStarted && winner"
         id="start"
         class="new-game"
         @click="newGame()"
       >
         NEW GAME
-      </button>
-      <button class="game-btn" v-if="gameStarted && !winner" @click="onHit()">
+      </button> -->
+      <button
+        class="game-btn"
+        v-if="gameStarted && !winner"
+        @click="onHit()"
+        :disabled="disableButton"
+      >
         HIT
       </button>
-      <button class="game-btn" v-if="gameStarted && !winner" @click="onStand()">
+      <button
+        class="game-btn"
+        v-if="gameStarted && !winner"
+        @click="onStand()"
+        :disabled="disableButton"
+      >
         STAND
       </button>
-
     </div>
     <div class="score d-flex align-items-center" v-if="gameStarted">
       <div class="total text-center">
@@ -70,7 +80,6 @@
         <GameCard :suit="card.suit" :value="card.value" />
       </div>
     </div>
-
   </MDBContainer>
 </template>
 
@@ -81,11 +90,11 @@ import { ref } from "vue";
 import GameCard from "./components/GameCard.vue";
 
 import BetModal from "./components/BetModal.vue";
-
+import BetStatus from "./components/BetStatus.vue";
 
 export default {
   name: "BlackJack",
-  components: { MDBCol, MDBRow, MDBContainer, GameCard, MDBModal, BetModal },
+  components: { MDBCol, MDBRow, MDBContainer, GameCard, MDBModal, BetModal, BetStatus },
   data() {
     return {
       deck: [],
@@ -93,8 +102,11 @@ export default {
       dealerCards: [],
       gameStarted: false,
       hasAce: false,
-
+      showBetModal: false,
       acesCount: 0,
+      disableButton: false,
+      betAmount: 0,
+
 
       message: "",
       winner: "",
@@ -127,6 +139,9 @@ export default {
     totalBank() {
       return this.$store.getters.totalBank;
     },
+    currentBet() {
+      return this.$store.getters.currentBet;
+    },
   },
   //create and shuffle deck on mounted lifecycle hook so it's ready when loading the page
   mounted() {
@@ -150,6 +165,8 @@ export default {
       this.playerCards.push(this.deck.pop());
 
       this.dealerCards.push(this.deck.pop());
+
+      //cover dealer's second card
       this.dealerCards.forEach((card, index) => {
         if (index === 1) {
           card.secondCardDealer = true;
@@ -161,15 +178,19 @@ export default {
       this.getWinner();
     },
 
-    reset(){
+    reset() {
       this.playerCards = [];
       this.dealerCards = [];
       this.winner = "";
       this.hasAce = false;
+      this.disableButton = false;
     },
 
-    deal(){
-      console.log('agagaga func called')
+    deal() {
+      this.betAmount = this.currentBet
+
+      this.showBetModal = false;
+      this.newGame();
     },
 
     //helper function to delay
@@ -195,12 +216,17 @@ export default {
       }
     },
 
+    firstGame() {
+      this.showBetModal = true;
+    },
+
     onStand() {
       this.getDealerCards();
       setTimeout(() => {
         this.getWinner();
         this.exampleModal = true;
       }, 1000);
+      this.disableButton = true;
     },
 
     checkAces() {
@@ -224,8 +250,6 @@ export default {
         this.message = "Round Lost!";
         this.winner = "dealer";
         this.$store.commit("incrementDealer");
-        console.log("Player: ", this.playerWins);
-        console.log("Dealer: ", this.dealerWins);
       }
 
       if (
@@ -237,8 +261,12 @@ export default {
         this.winner = "player";
         this.exampleModal = true;
         this.$store.commit("incrementPlayer");
-        console.log("Player: ", this.playerWins);
-        console.log("Dealer: ", this.dealerWins);
+        this.$store.commit({
+          type: 'win',
+          pot: this.currentBet,
+          bj: true,
+        })
+        this.betAmount *= 2.5 
       } else if (
         this.playerCards.length < 3 &&
         playerHand === 21 &&
@@ -246,6 +274,11 @@ export default {
       ) {
         this.message = "Round Tie";
         this.winner = "tie";
+        this.$store.commit({
+          type: 'win',
+          pot: this.currentBet,
+          tie: true
+        })
         this.exampleModal = true;
       }
 
@@ -257,26 +290,38 @@ export default {
         this.message = "Round Won";
         this.winner = "player";
         this.$store.commit("incrementPlayer");
-        console.log("Player: ", this.playerWins);
-        console.log("Dealer: ", this.dealerWins);
+        this.$store.commit({
+          type: 'win',
+          pot: this.currentBet,
+        })
+
       }
       if (dealerHand <= 21) {
         if (dealerHand > playerHand) {
           this.message = "Round Lost";
           this.winner = "dealer";
           this.$store.commit("incrementDealer");
-          console.log("Player: ", this.playerWins);
-          console.log("Dealer: ", this.dealerWins);
+
         } else if (dealerHand < playerHand) {
           this.message = "Round Won";
           this.winner = "player";
-          this.$store.commit("incrementPlayer");
-          console.log("Player: ", this.playerWins);
-          console.log("Dealer: ", this.dealerWins);
+          this.$store.commit({
+          type: 'win',
+          pot: this.currentBet,
+        })
+          this.betAmount *= 2
         } else if (dealerHand <= 21 && dealerHand >= 17) {
           this.message = "Round Tie";
+          this.$store.commit({
+          type: 'win',
+          pot: this.currentBet,
+          tie: true
+        })
           this.winner = "tie";
         }
+      }
+      if(this.winner != ""){
+        this.$store.commit('setBet', 0)
       }
       return this.winner;
     },
@@ -287,6 +332,10 @@ export default {
       if (this.winner) {
         this.exampleModal = true;
       }
+    },
+
+    doSomething(){
+      this.showBetModal = true
     },
 
     //calculate current value of hand of player,
@@ -450,7 +499,7 @@ export default {
   padding: 0;
 }
 h1 {
-  color: aliceblue;
+  color: #444444;
 }
 
 .total {
@@ -468,6 +517,12 @@ h1 {
   margin: 0 15px 0 15px;
   margin-bottom: 0;
   font-weight: 500;
+}
+
+.modal-text{
+  flex-direction: column;
+  flex-wrap: wrap;
+  text-align: center;
 }
 
 #start {

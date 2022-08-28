@@ -10,6 +10,7 @@ const store = createStore({
       playerWins: 0,
       dealerWins: 0,
       totalBank: 1500,
+      currentBet: 0,
     };
   },
   mutations: {
@@ -21,15 +22,27 @@ const store = createStore({
     },
     bet(state, amount) {
       state.totalBank -= amount
+      state.currentBet = amount
     },
-    win(state, pot){
-      state.totalBank += pot
+    win(state, payload){
+      if(payload.tie){
+        state.totalBank += payload.pot
+      } else if(payload.bj){
+        state.totalBank += payload.pot*2.5
+      } else {
+        state.totalBank += payload.pot*2
+      }
+    },
+    setBet(state, value){
+      state.currentBet = value
     }
+
   },
   getters: {
     totalBank: state => state.totalBank,
     playerWins: state => state.playerWins,
-		dealerWins: state => state.dealerWins
+		dealerWins: state => state.dealerWins,
+    currentBet: state => state.currentBet
   }
 });
 
