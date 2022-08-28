@@ -1,5 +1,8 @@
 <template>
+
+    <BetModal @someFunction="deal()"></BetModal>
   <MDBContainer>
+
     <div class="start-btn d-flex justify-content-center" v-if="!gameStarted">
       <button id="start" @click="newGame()">START GAME</button>
     </div>
@@ -54,22 +57,7 @@
       <button class="game-btn" v-if="gameStarted && !winner" @click="onStand()">
         STAND
       </button>
-      <!-- <MDBBtn
-        v-if="gameStarted && !winner"
-        color="light"
-        :disabled="winner != ''"
-        @click="onHit()"
-      >
-        Hit
-      </MDBBtn>
-      <MDBBtn
-        v-if="gameStarted && !winner"
-        color="light"
-        :disabled="winner != ''"
-        @click="onStand()"
-      >
-        Stand
-      </MDBBtn> -->
+
     </div>
     <div class="score d-flex align-items-center" v-if="gameStarted">
       <div class="total text-center">
@@ -82,6 +70,7 @@
         <GameCard :suit="card.suit" :value="card.value" />
       </div>
     </div>
+
   </MDBContainer>
 </template>
 
@@ -91,9 +80,12 @@ import { ref } from "vue";
 
 import GameCard from "./components/GameCard.vue";
 
+import BetModal from "./components/BetModal.vue";
+
+
 export default {
   name: "BlackJack",
-  components: { MDBCol, MDBRow, MDBContainer, GameCard, MDBModal },
+  components: { MDBCol, MDBRow, MDBContainer, GameCard, MDBModal, BetModal },
   data() {
     return {
       deck: [],
@@ -125,6 +117,17 @@ export default {
       ],
     };
   },
+  computed: {
+    playerWins() {
+      return this.$store.getters.playerWins;
+    },
+    dealerWins() {
+      return this.$store.getters.dealerWins;
+    },
+    totalBank() {
+      return this.$store.getters.totalBank;
+    },
+  },
   //create and shuffle deck on mounted lifecycle hook so it's ready when loading the page
   mounted() {
     this.createDeck();
@@ -139,10 +142,7 @@ export default {
         this.shuffleDeck(this.deck);
       }
 
-      this.playerCards = [];
-      this.dealerCards = [];
-      this.winner = "";
-      this.hasAce = false;
+      this.reset();
       (this.reducedValueAce = 0), (this.gameStarted = true);
       this.playerCards.push(this.deck.pop());
       this.dealerCards.push(this.deck.pop());
@@ -159,6 +159,17 @@ export default {
       });
 
       this.getWinner();
+    },
+
+    reset(){
+      this.playerCards = [];
+      this.dealerCards = [];
+      this.winner = "";
+      this.hasAce = false;
+    },
+
+    deal(){
+      console.log('agagaga func called')
     },
 
     //helper function to delay
@@ -212,6 +223,9 @@ export default {
       if (playerHand > 21) {
         this.message = "Round Lost!";
         this.winner = "dealer";
+        this.$store.commit("incrementDealer");
+        console.log("Player: ", this.playerWins);
+        console.log("Dealer: ", this.dealerWins);
       }
 
       if (
@@ -222,6 +236,9 @@ export default {
         this.message = "Round Won, BlackJack!";
         this.winner = "player";
         this.exampleModal = true;
+        this.$store.commit("incrementPlayer");
+        console.log("Player: ", this.playerWins);
+        console.log("Dealer: ", this.dealerWins);
       } else if (
         this.playerCards.length < 3 &&
         playerHand === 21 &&
@@ -239,20 +256,28 @@ export default {
       if (dealerHand > 21) {
         this.message = "Round Won";
         this.winner = "player";
+        this.$store.commit("incrementPlayer");
+        console.log("Player: ", this.playerWins);
+        console.log("Dealer: ", this.dealerWins);
       }
       if (dealerHand <= 21) {
         if (dealerHand > playerHand) {
           this.message = "Round Lost";
           this.winner = "dealer";
+          this.$store.commit("incrementDealer");
+          console.log("Player: ", this.playerWins);
+          console.log("Dealer: ", this.dealerWins);
         } else if (dealerHand < playerHand) {
           this.message = "Round Won";
           this.winner = "player";
+          this.$store.commit("incrementPlayer");
+          console.log("Player: ", this.playerWins);
+          console.log("Dealer: ", this.dealerWins);
         } else if (dealerHand <= 21 && dealerHand >= 17) {
           this.message = "Round Tie";
           this.winner = "tie";
         }
       }
-      console.log(this.winner);
       return this.winner;
     },
 
@@ -389,7 +414,7 @@ export default {
   justify-content: center;
   font-family: Roboto, Helvetica, Arial, sans-serif;
   padding: 60px;
-  background: url("./assets/texture4.jpg");
+  background: url("./assets/texture5.jpg");
   background-size: cover;
   background-position: center;
   min-height: 100vh;
@@ -472,7 +497,7 @@ h1 {
   color: rgb(38, 38, 38);
   font-weight: 700;
   border: none;
-  box-shadow: #888888 0px 9px 0px, 0px 6px 25px rgba(0, 0, 0, 0.7);
+  box-shadow: #888888 0px 7px 0px, 0px 6px 20px rgba(0, 0, 0, 0.7);
   display: block;
   transition: all 0.2ms ease;
 }
