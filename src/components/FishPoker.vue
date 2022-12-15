@@ -19,6 +19,7 @@ export default {
     },
   },
   watch: {
+    //apply disabled class when totalBank - bet is < 0
     totalBank(newValue) {
       if (newValue - this.value < 0) {
         this.disabledClass = 'fish-disables'

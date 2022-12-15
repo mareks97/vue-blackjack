@@ -38,6 +38,12 @@ const store = createStore({
     },
     restoreBet(state, prevValue){
       state.totalBank = prevValue
+    },
+    restoreBank(state){
+      state.totalBank = 1500
+      state.playerWins = 0
+      state.dealerWins = 0
+      state.currentBet = 0
     }
 
   },

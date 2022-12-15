@@ -1,5 +1,5 @@
 <template>
-  <BetModal @onDeal="deal" v-if="showBetModal"></BetModal>
+  <BetModal @onDeal="deal" v-if="showBetModal" @newGame="firstGame()"></BetModal>
   <MDBContainer>
     <BetStatus v-if="gameStarted && !showBetModal"></BetStatus>
     <div class="start-btn d-flex justify-content-center" v-if="!gameStarted">
@@ -10,12 +10,12 @@
       <MDBCol>
         <MDBModal
           centered
-          id="exampleModal"
+          id="winningModal"
           tabindex="-1"
-          labelledby="exampleModalLabel"
-          v-model="exampleModal"
+          labelledby="winningModalLabel"
+          v-model="winningModal"
           class="winningModal"
-          @hidden="doSomething()"
+          @hidden="showModal()"
         >
           <div class="d-flex modal-text justify-content-center">
             <h2>{{ message.toUpperCase() }}</h2>
@@ -44,14 +44,6 @@
     </div>
 
     <div class="buttons text-center">
-      <!-- <button
-        v-if="gameStarted && winner"
-        id="start"
-        class="new-game"
-        @click="newGame()"
-      >
-        NEW GAME
-      </button> -->
       <button
         class="game-btn"
         v-if="gameStarted && !winner"
@@ -143,6 +135,13 @@ export default {
       return this.$store.getters.currentBet;
     },
   },
+  watch: {
+    totalBank(newValue) {
+      if(newValue == 0 && this.winner){
+        console.log('ashgdaskygdkasygd')
+      }
+    }
+  },
   //create and shuffle deck on mounted lifecycle hook so it's ready when loading the page
   mounted() {
     this.createDeck();
@@ -151,6 +150,14 @@ export default {
   methods: {
     //at start game check cards left in deck, reset some variables and draw cards.
     //also check for a "BlackJack(A+10 or A+Figure)"
+    firstGame(){
+      this.reset()
+      this.createDeck();
+      this.shuffleDeck(this.deck);
+      this.gameStarted= false
+      this.$store.commit('restoreBank')
+      this.showBetModal = true;
+    },
     newGame() {
       if (this.deck.length >= 26) {
         this.createDeck();
@@ -216,16 +223,13 @@ export default {
       }
     },
 
-    firstGame() {
-      this.showBetModal = true;
-    },
 
     onStand() {
       this.getDealerCards();
       setTimeout(() => {
         this.getWinner();
-        this.exampleModal = true;
-      }, 1000);
+        this.winningModal = true;
+      }, 1500);
       this.disableButton = true;
     },
 
@@ -259,7 +263,7 @@ export default {
       ) {
         this.message = "Round Won, BlackJack!";
         this.winner = "player";
-        this.exampleModal = true;
+        this.winningModal = true;
         this.$store.commit("incrementPlayer");
         this.$store.commit({
           type: 'win',
@@ -279,7 +283,7 @@ export default {
           pot: this.currentBet,
           tie: true
         })
-        this.exampleModal = true;
+        this.winningModal = true;
       }
 
       if (this.dealerCards[1].secondCardDealer === true) {
@@ -294,7 +298,7 @@ export default {
           type: 'win',
           pot: this.currentBet,
         })
-
+        this.betAmount *= 2
       }
       if (dealerHand <= 21) {
         if (dealerHand > playerHand) {
@@ -330,11 +334,11 @@ export default {
       this.playerCards.push(this.deck.pop());
       this.getWinner();
       if (this.winner) {
-        this.exampleModal = true;
+        this.winningModal = true;
       }
     },
 
-    doSomething(){
+    showModal(){
       this.showBetModal = true
     },
 
@@ -448,9 +452,9 @@ export default {
   },
   //bootsrap modal
   setup() {
-    const exampleModal = ref(false);
+    const winningModal = ref(false);
     return {
-      exampleModal,
+      winningModal,
     };
   },
 };
