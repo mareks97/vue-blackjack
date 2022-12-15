@@ -1,5 +1,5 @@
 <template>
-  <div class="fish" :class="fishClass">
+  <div class="fish"  :class="[fishClass, disabledClass]">
     {{ value }}
   </div>
 </template>
@@ -10,7 +10,22 @@ export default {
   data() {
     return {
       fishClass: "",
+      disabledClass: ""
     };
+  },
+  computed: {
+    totalBank() {
+      return this.$store.getters.totalBank;
+    },
+  },
+  watch: {
+    totalBank(newValue) {
+      if (newValue - this.value < 0) {
+        this.disabledClass = 'fish-disables'
+      } else{
+        this.disabledClass = ''
+      } 
+    },
   },
   methods: {
     getClass() {
@@ -31,7 +46,7 @@ export default {
     },
   },
   mounted() {
-    this.getClass()
+    this.getClass();
   },
 };
 </script>
@@ -49,7 +64,7 @@ export default {
   font-size: 20px;
   font-weight: 600;
   cursor: pointer;
-    box-shadow: 0px 3px 0px #888888, 0px 2px 6px rgba(0, 0, 0, 0.9);
+  box-shadow: 0px 3px 0px #888888, 0px 2px 6px rgba(0, 0, 0, 0.9);
 }
 
 .fish.one {
@@ -59,16 +74,22 @@ export default {
 .fish.five {
   background-color: rgb(158, 11, 11);
   border: 5px dashed white;
-    color: white;
+  color: white;
 }
 .fish.twofive {
   background-color: rgb(28, 4, 165);
   border: 5px dashed white;
-    color: white;
+  color: white;
 }
 .fish.hundred {
   background-color: rgb(25, 61, 18);
   border: 5px dashed white;
   color: rgb(230, 230, 230);
+}
+
+.fish-disables {
+  pointer-events: none;
+  cursor: default;
+  filter: grayscale();
 }
 </style>

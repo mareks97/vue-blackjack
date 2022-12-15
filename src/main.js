@@ -35,6 +35,9 @@ const store = createStore({
     },
     setBet(state, value){
       state.currentBet = value
+    },
+    restoreBet(state, prevValue){
+      state.totalBank = prevValue
     }
 
   },

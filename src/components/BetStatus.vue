@@ -1,4 +1,4 @@
-<template lang>
+<template>
   <div class="status-card">
     <p class="current">${{totalBank}}</p>
     <p class="bet">Current bet: ${{currentBet}}</p>

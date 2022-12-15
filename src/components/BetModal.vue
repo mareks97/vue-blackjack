@@ -35,23 +35,23 @@ export default {
   data() {
     return {
       totalBet: 0,
-      no: false,
+      currentTotal: 0
     };
   },
   methods: {
     addToTotal(value) {
-      if (value > this.totalBank) {
-        this.no = true;
-      }
       this.totalBet += value;
       this.$store.commit("bet", value);
       this.$store.commit("setBet", this.totalBet)
     },
     resetBet() {
-      this.$store.commit("win", this.totalBet);
+      this.$store.commit("restoreBet", this.currentTotal)
       this.totalBet = 0;
     },
   },
+  mounted() {
+    this.currentTotal = this.$store.getters.totalBank
+  }
 };
 </script>
 
@@ -62,10 +62,10 @@ export default {
   left: 0;
   top: 0;
   width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0, 0, 0); /* Fallback color */
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+  display: flex;
+  align-items: center;
 }
 .total-bet {
   display: flex;
@@ -74,6 +74,7 @@ export default {
   width: 100%;
   justify-content: center;
   font-size: 2.25rem;
+
 }
 
 p {
@@ -92,11 +93,12 @@ p {
   justify-content: center;
   align-items: center;
   background-color: #fefefe;
-  margin: 20% auto; /* 15% from the top and centered */
+  margin: auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
+  width: 80%; 
   color: black;
+
   box-shadow: 0px 10px 0px #888888;
 }
 
